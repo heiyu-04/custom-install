@@ -24,6 +24,7 @@ from pyctr.type.cia import CIAError
 from pyctr.type.tmd import TitleMetadataError
 
 from custominstall import CustomInstall, CI_VERSION, load_cifinish, InvalidCIFinishError, InstallStatus
+import windnd
 
 if TYPE_CHECKING:
     from os import PathLike
@@ -737,4 +738,24 @@ window = tk.Tk()
 window.title(f'custom-install {CI_VERSION}')
 frame = CustomInstallGUI(window)
 frame.pack(fill=tk.BOTH, expand=True)
+
+def drag_file(files):
+    try:
+        cialist = ',' .join((item.decode() for item in files))
+    except:
+        cialist = ',' .join((item.decode('gbk') for item in files))
+
+    cialist = cialist.split(',')
+    results = {}
+    for value in cialist:
+        f = value
+        success, reason = frame.add_cia(f)
+        if not success:
+            results[f] = reason
+    if results:
+        title_read_fail_window = TitleReadFailResults(frame.parent, failed=results)
+        title_read_fail_window.focus()
+    self.sort_treeview()
+
+windnd.hook_dropfiles(window, func=drag_file)
 window.mainloop()
